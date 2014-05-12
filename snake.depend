@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1397139435 source:/home/gluker/dvlp/csnake/snake.c
+	<stdlib.h>
+	<ncurses.h>
+	<time.h>
+
