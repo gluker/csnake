@@ -1,8 +1,0 @@
-NAME = snake
-main:
-	gcc $(NAME).c -std=c99 -lncurses -o $(NAME)
-
-run:
-	 ./$(NAME)
-clean:
-	rm ./$(NAME)
