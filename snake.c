@@ -10,7 +10,16 @@
 #define BODY_COLOR 3
 #define	DBG_COLOR 4
 #define APPLE_COLOR 5
-#define DELAY	0.5
+#define DELAY	0.3
+
+//TODO: commands queue
+//TODO: speed
+
+typedef struct Cmd cmd;
+struct Cmd{
+	int dir;
+	cmd* next;
+};
 
 typedef struct Node node;
 struct Node{
@@ -40,6 +49,7 @@ int main() {
     keypad(game_win,TRUE);
     nodelay(game_win,1);
     start_color();
+	init_pair(APPLE_COLOR,0,APPLE_COLOR);
     init_pair(BODY_COLOR,0,BODY_COLOR);
     init_pair(DBG_COLOR,DBG_COLOR,DBG_COLOR);
     node* head = malloc(sizeof(node));
@@ -49,25 +59,31 @@ int main() {
     head->prev = NULL;
     node* tail = head;
 
-    add_node(&head,D_UP,3);
-    add_node(&head,D_RIGHT,3);
-
+	cmd* cmd_h = malloc(sizeof(cmd));
+	cmd_h->next = NULL;
+	cmd_h->dir = 0;
+	cmd* cmd_t = cmd_h;
+ // add_node(&head,D_UP,3);
+   // add_node(&head,D_RIGHT,3);
+	/*
     char testar[maxy][maxx];
     for(int ix=0; ix<maxx;ix++)
 	for(int iy=0; iy<maxy;iy++)
 	    testar[iy][ix] = check_yx(iy,ix,head,10,10,game_win)?'X':'_';
-
+	*/
 
     wrefresh(game_win); 
     int game_state = 1;
     int ch;
     int x=10,y=10;
     int nx=0,ny=0;
+	int apx=15,apy=10;
     int new_dir = -(head->dir);
 
     int status = 0;
     while(game_state) {
         draw_snake(game_win,head,y,x);
+		draw_block(game_win,apy,apx,APPLE_COLOR);
 	mvwprintw(game_win,50,1,"x=%d,y=%d",x,y);
 	wrefresh(game_win);
 	clock_t start = clock();
@@ -90,6 +106,12 @@ int main() {
 	nodenum = 0;
 	nx=x+new_dir/2;
 	ny=y+new_dir%2;
+	
+	if(nx==apx && ny==apy){
+		apx = rand() % maxx /2;
+		apy = rand() % maxy;
+		tail->len++;
+	}
 	status=check_yx(ny,nx,head,y,x,game_win);
 	if(status){
 	    game_state=0;
@@ -104,7 +126,7 @@ int main() {
 	box(game_win,0,0);
     }
     endwin();
-   
+    /*
     for(int iy=0; iy<maxy;iy++){
 	for(int ix=0; ix<maxx/2;ix++){
 	    putchar(testar[iy][ix]);
@@ -112,6 +134,7 @@ int main() {
 	}
 	putchar('\n');
     }
+	*/
     //printf("Exit status=%d\nnx=%d, ny=%d\nx=%d,y=%d\nnode:%d\n"
 //	,status,nx,ny,x,y,nodenum);
     return 0;
@@ -174,6 +197,23 @@ int turn(node** head, node** tail,int dir) {
     }
     return 1;
 }
+
+void push_cmd(cmd** cmd_h,int dir){
+	cmd* tempcmd = malloc(sizeof(cmd));
+	tempcmd->dir = dir;
+	(*cmd_h)->next = tempcmd;
+	cmd_h = &tempcmd;
+
+}
+int pull_cmd(cmd** cmd_t){
+	if (!((*cmd_t)->next)) return 0;
+	cmd* tempcmd = cmd_t; 
+	int rv = (*cmd_t)->dir;
+	*cmd_t = (*cmd_t)->next;
+	free(tempcmd);
+	return rv;
+}
+
 
 void add_node(node** head,int dir,int len) {
     node* tempnode = malloc(sizeof(node*));
